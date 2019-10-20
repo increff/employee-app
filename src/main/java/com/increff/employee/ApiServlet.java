@@ -3,6 +3,7 @@ package com.increff.employee;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.SQLException;
+import java.util.List;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -10,8 +11,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-@WebServlet(name = "HelloWorld", description = "sample servlet", urlPatterns = { "/employee" })
-public class HelloWorldServlet extends HttpServlet {
+@WebServlet(name = "HelloWorld", description = "sample servlet", urlPatterns = { "/api" })
+public class ApiServlet extends HttpServlet {
 
 	private static final long serialVersionUID = 1042412442755277478L;
 	private static EmployeeHibernateApi api;
@@ -26,22 +27,37 @@ public class HelloWorldServlet extends HttpServlet {
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		resp.setContentType("text/html");
 		PrintWriter out = resp.getWriter();
-		out.println("<h1>Increff Employee</h1>");
+		out.println("<h1>Employee Details</h1>");
 
-		int id = Integer.valueOf(req.getParameter("id"));
-		EmployeePojo p = null;
-		try {
-			p = api.select(id);
-		} catch (SQLException e) {
-			throw new ServletException("Error retrieving object", e);
+		String actionParam = req.getParameter("action");
+		String idParam = req.getParameter("id");
+
+		if (idParam == null) {
+			try {
+				List<EmployeePojo> list = api.selectAll();
+				for(EmployeePojo p: list) {
+					print(out, p);
+				}
+			} catch (SQLException e) {
+				throw new ServletException("Error retrieving emmployee list", e);
+			}
+			return;
 		}
 
-		out.println("<br>");
-		out.println("Name: " + p.getName());
-		out.println("<br>");
-		out.println("Age: " + p.getAge());
-		out.println("<br>");
-		out.println("Id: " + p.getId());
+		if (actionParam != null && actionParam.contentEquals("delete")) {
+			doDelete(req, resp);
+			return;
+		}
+
+		int id = Integer.valueOf(idParam);
+		try {
+			EmployeePojo p = api.select(id);
+			print(out, p);
+		} catch (SQLException e) {
+			throw new ServletException("Error retrieving single employee", e);
+		}
+
+	
 
 	}
 
@@ -62,6 +78,10 @@ public class HelloWorldServlet extends HttpServlet {
 		} catch (SQLException e) {
 			throw new ServletException("Error saving object", e);
 		}
+
+		PrintWriter out = resp.getWriter();
+		out.println("Employee created successfully");
+
 	}
 
 	// Updating
@@ -81,7 +101,7 @@ public class HelloWorldServlet extends HttpServlet {
 		} catch (SQLException e) {
 			throw new ServletException("Error updating object", e);
 		}
-		
+
 	}
 
 	// Deleting
@@ -89,7 +109,7 @@ public class HelloWorldServlet extends HttpServlet {
 	protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 
 		PrintWriter out = resp.getWriter();
-		out.println("<h1>Employee Deleted</h1>");
+		out.println("employee deleted");
 		int id = Integer.valueOf(req.getParameter("id"));
 		try {
 			api.delete(id);
@@ -97,5 +117,14 @@ public class HelloWorldServlet extends HttpServlet {
 			throw new ServletException("Error retrieving object", e);
 		}
 
+	}
+	
+	private void print(PrintWriter out, EmployeePojo p) {
+		out.println("<p>");
+		out.println("Name: " + p.getName());
+		out.println("<br>");
+		out.println("Age: " + p.getAge());
+		out.println("<br>");
+		out.println("Id: " + p.getId());
 	}
 }
