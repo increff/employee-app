@@ -27,7 +27,6 @@ public class ApiServlet extends HttpServlet {
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		resp.setContentType("text/html");
 		PrintWriter out = resp.getWriter();
-		out.println("<h1>Employee Details</h1>");
 
 		String actionParam = req.getParameter("action");
 		String idParam = req.getParameter("id");
@@ -35,7 +34,7 @@ public class ApiServlet extends HttpServlet {
 		if (idParam == null) {
 			try {
 				List<EmployeePojo> list = api.selectAll();
-				for(EmployeePojo p: list) {
+				for (EmployeePojo p : list) {
 					print(out, p);
 				}
 			} catch (SQLException e) {
@@ -56,8 +55,6 @@ public class ApiServlet extends HttpServlet {
 		} catch (SQLException e) {
 			throw new ServletException("Error retrieving single employee", e);
 		}
-
-	
 
 	}
 
@@ -118,7 +115,7 @@ public class ApiServlet extends HttpServlet {
 		}
 
 	}
-	
+
 	private void print(PrintWriter out, EmployeePojo p) {
 		out.println("<p>");
 		out.println("Name: " + p.getName());
